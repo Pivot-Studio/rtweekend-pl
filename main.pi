@@ -21,19 +21,17 @@ fn main() i64 {
     for let a = -11; a < 11; a = a + 1 {
         for let b = -11; b < 11; b = b + 1 {
             let choose_mat = random_f64();
-            let a = a*5;
-            let b = b*5;
             let center = vec3::new(a as f64 + 0.9 * random_f64(), 0.2, b as f64 + 0.9 * random_f64());
 
             if (center.sub(vec3::new(4.0, 0.2, 0.0))).length() > 0.9 {
                 let sphere_material:hittable::Material;
 
-                if choose_mat < 0.3 {
+                if choose_mat < 0.8 {
                     // diffuse
                     let albedo = vec3::random().mul_vec(vec3::random());
                     sphere_material = material::new_lam(albedo);
                     world.add(sphere::new(center, 0.2, sphere_material));
-                } else if choose_mat < 0.6 {
+                } else if choose_mat < 0.95 {
                     // metal
                     let albedo = vec3::random_range(0.5, 1.0);
                     let fuzz = random_f64_range(0.0, 0.5);
