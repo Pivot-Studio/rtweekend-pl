@@ -72,7 +72,7 @@ fn main() i64 {
     cam.focus_dist = 10.0;
 
     // Render
-    cam.render(&world);
+    cam.render(world);
     return 0;
 }
 
