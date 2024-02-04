@@ -1,0 +1,37 @@
+use raytracepl::ray::Ray;
+use raytracepl::vec3::Vec3;
+use raytracepl::interval::Interval;
+
+pub trait Material {
+    fn scatter(r_in:Ray, rec:HitRecord, attenuation:* Vec3, scattered:*Ray) bool;
+}
+
+
+pub struct HitRecord {
+    pub p:Vec3;
+    pub normal:Vec3;
+    pub t:f64;
+    pub front_face:bool;
+    pub mat:Material;
+}
+
+pub trait Hittable {
+    fn hit(r:Ray, ray_t:Interval, rec:*HitRecord) bool;
+}
+
+
+
+impl HitRecord {
+    pub fn set_face_normal(r:Ray, outward_normal:Vec3) void {
+        // Sets the hit record normal vector.
+        // NOTE: the parameter `outward_normal` is assumed to have unit length.
+        self.front_face = r.direction().dot(outward_normal) < 0.0;
+        if self.front_face {
+            self.normal = outward_normal;
+        } else {
+            self.normal = outward_normal.neg();
+        }
+        return;
+    }
+}
+

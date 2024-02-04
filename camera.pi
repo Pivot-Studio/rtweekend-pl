@@ -1,0 +1,166 @@
+use raytracepl::utils::*;
+use raytracepl::color;
+use raytracepl::hittable::Hittable;
+use raytracepl::ray::Ray;
+use raytracepl::vec3::Vec3;
+use raytracepl::interval;
+use std::io;
+// use raytracepl::hittable::Material; // FIXME: comment this line and compile will fail
+
+
+pub struct Camera {
+    pub aspect_ratio: f64;
+    pub image_width: i64;
+    pub sample_per_pixel: i64;
+    pub max_depth: i64;
+    pub vfov: f64; // vertical view angle in degrees (field of view)
+    pub lookfrom: Vec3;
+    pub lookat: Vec3;
+    pub vup: Vec3;  // Camera-relative "up" direction
+    pub defocus_angle: f64; // Variation angle of rays through each pixel
+    pub focus_dist: f64; // Distance to focus plane
+    image_height: i64;
+    center: Vec3;
+    pixel00_loc:Vec3;
+    pixel_delta_u: Vec3;
+    pixel_delta_v: Vec3;
+    u: Vec3; // Camera frame bias vectors
+    v: Vec3;
+    w: Vec3;
+    defocus_disk_u: Vec3; // Defocus disk horizontal radius
+    defocus_disk_v: Vec3; // Defocus disk vertical radius
+}
+
+
+impl Camera {
+    fn ray_color(r:Ray, depth:i64, world:Hittable) Vec3 {
+        // If we've exceeded the ray bounce limit, no more light is gathered.
+        if depth <= 0 {
+            return vec3::new(0.0, 0.0, 0.0);
+        }
+        let rec = hittable::HitRecord{};
+        if world.hit(r, interval::new(0.001, *utils::INFINITY), &rec) {
+            let scattered = Ray{};
+            let attenuation = vec3::new(0.0, 0.0, 0.0);
+            let mat = rec.mat;
+            if mat.scatter(r, rec, &attenuation, &scattered) {
+                return attenuation.mul_vec(self.ray_color(scattered, depth - 1, world));
+            }
+            return vec3::new(0.0, 0.0, 0.0);
+        }
+        let unit_direction = r.direction().unit_vector();
+        let a = 0.5 * (unit_direction.y + 1.0);
+        return vec3::new(1.0, 1.0, 1.0).mul(1.0-a).add(vec3::new(0.5, 0.7, 1.0).mul(a));
+    }
+    fn initialize() void {
+        self.image_height = (self.image_width as f64 / self.aspect_ratio) as i64;
+        if self.image_height < 1 {
+            self.image_height = 1;
+        }
+
+        self.center = self.lookfrom;
+
+        // Determine viewport dimensions.
+
+        let theta = degrees_to_radians(self.vfov);
+        let h = tan(theta / 2.0);
+        let viewport_height = 2.0 * h * self.focus_dist;
+        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
+
+        // Calculate the camera frame basis unit vectors.
+        self.w = self.lookfrom.sub(self.lookat).unit_vector();
+        self.u = self.vup.cross(self.w).unit_vector();
+        self.v = self.w.cross(self.u);
+
+        // Calculate the vectors across the horizontal and down the vertical viewport edges.
+        let viewport_u = self.u.mul(viewport_width);
+        let viewport_v = self.v.neg().mul(viewport_height);
+
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+        self.pixel_delta_u = viewport_u.div(self.image_width as f64);
+        self.pixel_delta_v = viewport_v.div(self.image_height as f64);
+
+        // Calculate the location of the upper left pixel.
+        let viewport_upper_left = self.center.sub(self.w.mul(self.focus_dist)).sub(viewport_u.div(2.0)).sub(viewport_v.div(2.0));
+        self.pixel00_loc = viewport_upper_left.add(self.pixel_delta_u.mul(0.5)).add(self.pixel_delta_v.mul(0.5));
+
+        // Calculate the defocus disk basis vectors.
+        let defocus_disk_radius = self.focus_dist * tan(degrees_to_radians(self.defocus_angle) / 2.0);
+        self.defocus_disk_u = self.u.mul(defocus_disk_radius);
+        self.defocus_disk_v = self.v.mul(defocus_disk_radius);
+
+        return;
+    }
+
+
+    pub fn render(world:Hittable) void {
+        self.initialize();
+        io::print_s("P3\n");
+        io::print_s(itoa_pl(self.image_width));
+        io::print_s(" ");
+        io::print_s(itoa_pl(self.image_height));
+        io::print_s("\n255\n");
+        let f = io::stdout();
+        for let j = 0; j < self.image_height; j = j + 1 {
+            for let i = 0; i < self.image_width; i = i + 1 {
+                let pixel_color = vec3::new(0.0, 0.0, 0.0);
+                for let sample = 0; sample < self.sample_per_pixel; sample = sample + 1 {
+                    let r = self.get_ray(i, j);
+                    pixel_color = pixel_color.add(self.ray_color(r, self.max_depth,world));
+                }
+                color::write_color(
+                    f, pixel_color,
+                    self.sample_per_pixel);
+            }
+        }
+        return;
+    }
+    fn get_ray(i:i64, j:i64) Ray {
+        // Get a randomly sampled camera ray for the pixel at (i, j),
+        // originating from the camera defocus disk.
+
+        let pixel_center = self.pixel00_loc.add(
+            self.pixel_delta_u.mul(i as f64)
+        ).add(
+            self.pixel_delta_v.mul(j as f64)
+        );
+        let pixel_sample = self.pixel_sample_square().add(pixel_center);
+
+        let ray_origin;
+        if self.defocus_angle > 0.0 {
+            ray_origin = self.defocus_disk_sample();
+        }else {
+            ray_origin = self.center;
+        }
+        let ray_direction = pixel_sample.sub(ray_origin);
+
+        return ray::new(ray_origin, ray_direction);
+    }
+
+    fn defocus_disk_sample() Vec3 {
+        // Return a random point in the defocus disk.
+        let p = vec3::random_in_unit_disk();
+        return self.defocus_disk_u.mul(p.x).add(self.defocus_disk_v.mul(p.y)).add(self.center);
+    }
+
+    fn pixel_sample_square() Vec3 {
+        // Return a random point in the square surrounding a pixel at the origin.
+        let px = -0.5 + random_f64();
+        let py = -0.5 + random_f64();
+        return self.pixel_delta_u.mul(px).add(self.pixel_delta_v.mul(py));
+    }
+}
+
+
+pub fn new(aspect_ratio:f64, image_width:i64) Camera {
+    
+    return Camera {aspect_ratio:aspect_ratio, image_width:image_width,
+        sample_per_pixel:10,max_depth:10, vfov:90.0,
+        lookfrom:vec3::new(0.0, 0.0, -1.0), lookat:vec3::new(0.0, 0.0, 0.0), vup:vec3::new(0.0, 1.0, 0.0)};
+}
+
+
+pub fn default() Camera {
+    
+    return new(1.0, 100);
+}

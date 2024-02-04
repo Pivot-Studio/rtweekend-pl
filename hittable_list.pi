@@ -1,0 +1,51 @@
+use raytracepl::hittable::*;
+use raytracepl::vec3::Vec3;
+use raytracepl::utils::*;
+use raytracepl::color;
+use raytracepl::ray::Ray;
+use std::cols::arr;
+use raytracepl::interval::Interval;
+
+
+pub struct HittableList {
+    pub objects:arr::Array<Hittable>;
+}
+
+pub fn new() HittableList {
+    return HittableList {
+        objects: arr::new<Hittable>(),
+    };
+}
+
+impl HittableList {
+    pub fn add(obj:Hittable) void {
+        self.objects.push(obj);
+        return;
+    }
+    pub fn clear() void {
+        self.objects = arr::new<Hittable>();
+        return;
+    }
+}
+
+
+impl Hittable for HittableList {
+    fn hit(r:Ray, t:Interval, rec:* HitRecord) bool {
+        let {min: t_min, max:t_max} = t;
+        let temp_rec = &HitRecord{};
+        let hit_anything = false;
+        let closest_so_far = t_max;
+
+
+        for let i = 0; i < self.objects.length() as i64; i = i + 1 {
+            let object = self.objects.get(i);
+            let interval = Interval{min: t_min, max: closest_so_far};
+            if object.hit(r, interval, temp_rec) {
+                hit_anything = true;
+                closest_so_far = temp_rec.t;
+                *rec = *temp_rec;
+            }
+        }
+        return hit_anything;
+    }
+}

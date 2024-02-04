@@ -1,0 +1,38 @@
+use raytracepl::vec3::Vec3;
+
+use std::io;
+use std::libc::*;
+use raytracepl::utils::*;
+use raytracepl::interval;
+
+fn linear_to_gamma(linear_component:f64) f64 {
+    return sqrt_f64(linear_component);
+}
+
+pub fn write_color(f: io::File, color:Vec3, sample_per_pixel:i64) void {
+    let r = color.x;
+    let g = color.y;
+    let b = color.z;
+
+    // Divide the color by the number of samples
+    let scale = 1.0 / sample_per_pixel as f64;
+    r = r * scale;
+    g = g * scale;
+    b = b * scale;
+
+    // Apply the linear to gamma transform
+    r = linear_to_gamma(r);
+    g = linear_to_gamma(g);
+    b = linear_to_gamma(b);
+
+    // Write the translated [0,255] value of each color component
+    let interval = interval::new(0.0, 0.999);
+    let s = itoa_pl((256.0 * interval.clamp(r)) as i64);
+    s.append(" ");
+    s.append(itoa_pl((256.0 * interval.clamp(g)) as i64));
+    s.append(" ");
+    s.append(itoa_pl((256.0 * interval.clamp(b)) as i64));
+    s.append("\n");
+    f.write_string(s);
+    return;
+}

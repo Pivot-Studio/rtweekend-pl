@@ -1,0 +1,46 @@
+pub fn itoa_pl(i:i64) string {
+    let bs = [u8 * 10;];
+    let len = itoa(i, &bs[0]);
+    let ss = "";
+    ss.from_raw(&bs[0], len);
+    return ss;
+}
+
+pub fn itoa(i:i64, to:*u8) i64;
+
+pub fn sqrt_f64(x:f64) f64;
+
+var INFINITY = &(1.0/0.0);
+
+
+var PIE = &3.1415926535897932385;
+
+pub fn degrees_to_radians(degrees:f64) f64 {
+    return degrees * *PIE / 180.0;
+}
+
+const RAND_MAX:i32;
+
+pub fn random_f64() f64 {
+    let r = rand();
+
+    return r as i64 as f64 /((RAND_MAX as i64+1) as f64);
+}
+
+pub fn rand() i32;
+
+
+
+pub fn random_f64_range(min:f64,max:f64) f64 {
+    return min + random_f64() * (max - min);
+}
+
+pub fn fabs(x:f64) f64;
+pub fn fmin(x:f64, y:f64) f64;
+
+
+pub fn pow(x:f64, y:f64) f64;
+
+pub fn tan(x:f64) f64;
+
+pub fn cos(x:f64) f64;

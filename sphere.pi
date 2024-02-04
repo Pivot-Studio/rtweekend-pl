@@ -1,0 +1,54 @@
+use raytracepl::hittable::*;
+use raytracepl::vec3::Vec3;
+use raytracepl::utils::*;
+use raytracepl::color;
+use raytracepl::ray::Ray;
+use raytracepl::interval::Interval;
+
+pub struct Sphere {
+    center:Vec3;
+    radius:f64;
+    mat:Material;
+}
+
+pub fn new(center:Vec3, radius:f64, mat:Material) Sphere {
+    return Sphere {
+        center:center,
+        radius:radius,
+        mat:mat,
+    };
+}
+
+
+
+impl Hittable for Sphere {
+    fn hit(r:Ray,  t:Interval, rec:* HitRecord)  bool {
+        let oc = r.origin().sub(self.center);
+        let a = r.direction().length_squared();
+        let half_b = oc.dot(r.direction());
+        let c = oc.length_squared() - self.radius*self.radius;
+        let discriminant = half_b*half_b - a*c;
+        if discriminant < 0.0 {
+            return false;
+        }
+        let sqrtd = sqrt_f64(discriminant);
+
+        // Find the nearest root that lies in the acceptable range.
+        let root = (-half_b - sqrtd) / a;
+        if !t.surrounds(root) {
+            // try the other root
+            root = (-half_b + sqrtd) / a;
+            if !t.surrounds(root) {
+                return false;
+            }
+        }
+
+        rec.t = root;
+        rec.p = r.at(rec.t);
+        let outward_normal = rec.p.sub(self.center).div(self.radius);
+        rec.set_face_normal(r, outward_normal);
+        rec.mat = self.mat;
+
+        return true;
+    }
+}

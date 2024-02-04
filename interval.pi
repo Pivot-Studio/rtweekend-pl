@@ -1,0 +1,38 @@
+use raytracepl::utils::*;
+
+pub struct Interval {
+    pub min:f64;
+    pub max:f64;
+}
+
+pub fn new(min:f64, max:f64)  Interval {
+    return Interval {
+        min: min,
+        max: max
+    };
+}
+
+impl Interval {
+    pub fn is_empty()  bool {
+        return self.min > self.max;
+    }
+    pub fn contains(x:f64)  bool {
+        return x >= self.min && x <= self.max;
+    }
+    pub fn surrounds(x:f64)  bool {
+        return x > self.min && x < self.max;
+    }
+    pub fn clamp(x:f64) f64 {
+        if x < self.min {
+            return self.min;
+        }
+        if x > self.max {
+            return self.max;
+        }
+        return x;
+    }
+}
+
+var EMPTY = &Interval { min: *utils::INFINITY, max: -*utils::INFINITY };
+
+var UNIVERSE = &Interval { min: -*utils::INFINITY, max: *utils::INFINITY };
