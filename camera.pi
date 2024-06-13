@@ -5,7 +5,6 @@ use raytracepl::ray::Ray;
 use raytracepl::vec3::Vec3;
 use raytracepl::interval;
 use std::io;
-// use raytracepl::hittable::Material; // FIXME: comment this line and compile will fail
 
 
 pub struct Camera {

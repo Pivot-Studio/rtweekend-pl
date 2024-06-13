@@ -14,7 +14,6 @@ use raytracepl::material;
 fn main() i64 {
     // World
     let world = hittable_list::new();
-
     let ground_material = material::new_lam(vec3::new(0.5, 0.5, 0.5));
     world.add(sphere::new(vec3::new(0.0, -1000.0, 0.0), 1000.0, ground_material));
 
@@ -72,7 +71,7 @@ fn main() i64 {
     cam.focus_dist = 10.0;
 
     // Render
-    cam.render(world);
+    cam.render(&world);
     return 0;
 }
 

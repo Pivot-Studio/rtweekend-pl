@@ -4,6 +4,7 @@ use std::io;
 use std::libc::*;
 use raytracepl::utils::*;
 use raytracepl::interval;
+use core::string::ToString;
 
 fn linear_to_gamma(linear_component:f64) f64 {
     return sqrt_f64(linear_component);
@@ -27,12 +28,13 @@ pub fn write_color(f: io::File, color:Vec3, sample_per_pixel:i64) void {
 
     // Write the translated [0,255] value of each color component
     let interval = interval::new(0.0, 0.999);
-    let s = itoa_pl((256.0 * interval.clamp(r)) as i64);
-    s.append(" ");
-    s.append(itoa_pl((256.0 * interval.clamp(g)) as i64));
-    s.append(" ");
-    s.append(itoa_pl((256.0 * interval.clamp(b)) as i64));
-    s.append("\n");
-    f.write_string(s);
+    let sb = string::stringbuilder(11);
+    sb.add_str(((256.0 * interval.clamp(r)) as i64).to_string());
+    sb.add_str(" ");
+    sb.add_str(((256.0 * interval.clamp(g)) as i64).to_string());
+    sb.add_str(" ");
+    sb.add_str(((256.0 * interval.clamp(b)) as i64).to_string());
+    sb.add_str("\n");
+    f.write_string(sb.str());
     return;
 }
