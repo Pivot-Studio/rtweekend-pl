@@ -72,7 +72,7 @@ impl Vec3 {
     }
 
     pub fn length() f64 {
-        return sqrt_f64(self.length_squared());
+        return sqrt_64(self.length_squared());
     }
 
     pub fn add(other:Vec3) Vec3 {
@@ -131,7 +131,7 @@ impl Vec3 {
     pub fn refract(n:Vec3, etai_over_etat:f64) Vec3 {
         let cos_theta = fmin(self.neg().dot(n), 1.0);
         let r_out_perp = self.add(n.mul(cos_theta)).mul(etai_over_etat);
-        let r_out_parallel = n.mul(sqrt_f64(fabs(1.0 - r_out_perp.length_squared()))).neg();
+        let r_out_parallel = n.mul(sqrt_64(fabs(1.0 - r_out_perp.length_squared()))).neg();
         return r_out_perp.add(r_out_parallel);
     }
 

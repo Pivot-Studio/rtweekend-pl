@@ -1,6 +1,7 @@
 use raytracepl::utils::*;
 use raytracepl::color;
 use raytracepl::hittable::Hittable;
+use raytracepl::hittable_list::HittableList;
 use raytracepl::ray::Ray;
 use raytracepl::vec3::Vec3;
 use raytracepl::interval;
@@ -32,13 +33,13 @@ pub struct Camera {
 
 
 impl Camera {
-    fn ray_color(r:Ray, depth:i64, world:Hittable) Vec3 {
+    fn ray_color<H:Hittable>(r:Ray, depth:i64, world:H) Vec3 {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if depth <= 0 {
             return vec3::new(0.0, 0.0, 0.0);
         }
         let rec = hittable::HitRecord{};
-        if world.hit(r, interval::new(0.001, *utils::INFINITY), &rec) {
+        if world.hit(r, interval::new(0.001, utils::INFINITY), &rec) {
             let scattered = Ray{};
             let attenuation = vec3::new(0.0, 0.0, 0.0);
             let mat = rec.mat;
@@ -51,7 +52,7 @@ impl Camera {
         let a = 0.5 * (unit_direction.y + 1.0);
         return vec3::new(1.0, 1.0, 1.0).mul(1.0-a).add(vec3::new(0.5, 0.7, 1.0).mul(a));
     }
-    fn initialize() void {
+    pub fn initialize() void {
         self.image_height = (self.image_width as f64 / self.aspect_ratio) as i64;
         if self.image_height < 1 {
             self.image_height = 1;
@@ -92,14 +93,14 @@ impl Camera {
     }
 
 
-    pub fn render(world:Hittable) void {
+    pub fn render<W:Hittable>(world:W, file:string) void {
         self.initialize();
-        io::print_s("P3\n");
-        io::print_s(itoa_pl(self.image_width));
-        io::print_s(" ");
-        io::print_s(itoa_pl(self.image_height));
-        io::print_s("\n255\n");
-        let f = io::stdout();
+        let f = io::open_write(file);
+        f.write_string("P3\n");
+        f.write_string(itoa_pl(self.image_width));
+        f.write_string(" ");
+        f.write_string(itoa_pl(self.image_height));
+        f.write_string("\n255\n");
         for let j = 0; j < self.image_height; j = j + 1 {
             for let i = 0; i < self.image_width; i = i + 1 {
                 let pixel_color = vec3::new(0.0, 0.0, 0.0);
@@ -111,10 +112,11 @@ impl Camera {
                     f, pixel_color,
                     self.sample_per_pixel);
             }
+            // println!(j+1,"/",self.image_height);
         }
         return;
     }
-    fn get_ray(i:i64, j:i64) Ray {
+    pub fn get_ray(i:i64, j:i64) Ray {
         // Get a randomly sampled camera ray for the pixel at (i, j),
         // originating from the camera defocus disk.
 

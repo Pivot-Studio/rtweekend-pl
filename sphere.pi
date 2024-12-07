@@ -5,14 +5,14 @@ use raytracepl::color;
 use raytracepl::ray::Ray;
 use raytracepl::interval::Interval;
 
-pub struct Sphere {
+pub struct Sphere<M:Material> {
     center:Vec3;
     radius:f64;
-    mat:Material;
+    mat:M;
 }
 
-pub fn new(center:Vec3, radius:f64, mat:Material) Sphere {
-    return Sphere {
+pub fn new<M:Material>(center:Vec3, radius:f64, mat:M) Sphere<M> {
+    return Sphere<M> {
         center:center,
         radius:radius,
         mat:mat,
@@ -21,7 +21,7 @@ pub fn new(center:Vec3, radius:f64, mat:Material) Sphere {
 
 
 
-impl Hittable for Sphere {
+impl <M:Material> Hittable for Sphere<M> {
     fn hit(r:Ray,  t:Interval, rec:* HitRecord)  bool {
         let oc = r.origin().sub(self.center);
         let a = r.direction().length_squared();
@@ -31,7 +31,7 @@ impl Hittable for Sphere {
         if discriminant < 0.0 {
             return false;
         }
-        let sqrtd = sqrt_f64(discriminant);
+        let sqrtd = sqrt_64(discriminant);
 
         // Find the nearest root that lies in the acceptable range.
         let root = (-half_b - sqrtd) / a;

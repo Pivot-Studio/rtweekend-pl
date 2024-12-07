@@ -8,15 +8,22 @@ pub fn itoa_pl(i:i64) string {
 
 pub fn itoa(i:i64, to:*u8) i64;
 
-pub fn sqrt_f64(x:f64) f64;
+pub fn sqrt_64(x: f64) f64;
 
-var INFINITY = &(1.0/0.0);
+fn abs_f(f:f64) f64 {
+    if f < 0.0 {
+        return -f;
+    }
+    return f;
+}
+
+var INFINITY = (1.0/0.0);
 
 
-var PIE = &3.1415926535897932385;
+var PIE = 3.1415926535897932385;
 
 pub fn degrees_to_radians(degrees:f64) f64 {
-    return degrees * *PIE / 180.0;
+    return degrees * PIE / 180.0;
 }
 
 const RAND_MAX:i32;

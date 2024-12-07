@@ -9,9 +9,17 @@ use raytracepl::sphere::Sphere;
 use raytracepl::interval;
 use raytracepl::camera::Camera;
 use raytracepl::material;
-
+use std::thread;
+use std::chan;
+use raytracepl::interval::Interval;
+use std::task::helper;
 
 fn main() i64 {
+    run("1.ppm");
+    return 0;
+}
+
+fn run(f:string) i64 {
     // World
     let world = hittable_list::new();
     let ground_material = material::new_lam(vec3::new(0.5, 0.5, 0.5));
@@ -23,28 +31,28 @@ fn main() i64 {
             let center = vec3::new(a as f64 + 0.9 * random_f64(), 0.2, b as f64 + 0.9 * random_f64());
 
             if (center.sub(vec3::new(4.0, 0.2, 0.0))).length() > 0.9 {
-                let sphere_material:hittable::Material;
+
 
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = vec3::random().mul_vec(vec3::random());
-                    sphere_material = material::new_lam(albedo);
+                    let sphere_material = material::new_lam(albedo);
                     world.add(sphere::new(center, 0.2, sphere_material));
+                    
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = vec3::random_range(0.5, 1.0);
                     let fuzz = random_f64_range(0.0, 0.5);
-                    sphere_material = material::new_metal(albedo, fuzz);
+                    let sphere_material = material::new_metal(albedo, fuzz);
                     world.add(sphere::new(center, 0.2, sphere_material));
                 } else {
                     // glass
-                    sphere_material = material::new_dielectric(1.5);
+                    let sphere_material = material::new_dielectric(1.5);
                     world.add(sphere::new(center, 0.2, sphere_material));
                 }
             }
         }
     }
-
     let material1 = material::new_dielectric(1.5);
     world.add(sphere::new(vec3::new(0.0, 1.0, 0.0), 1.0, material1));
 
@@ -71,7 +79,7 @@ fn main() i64 {
     cam.focus_dist = 10.0;
 
     // Render
-    cam.render(&world);
+    cam.render(world, f);
     return 0;
 }
 

@@ -33,6 +33,6 @@ impl Interval {
     }
 }
 
-var EMPTY = &Interval { min: *utils::INFINITY, max: -*utils::INFINITY };
+var EMPTY = Interval { min: utils::INFINITY, max: -utils::INFINITY };
 
-var UNIVERSE = &Interval { min: -*utils::INFINITY, max: *utils::INFINITY };
+var UNIVERSE = Interval { min: -utils::INFINITY, max: utils::INFINITY };
