@@ -12,10 +12,81 @@ use raytracepl::material;
 use std::thread;
 use std::chan;
 use raytracepl::interval::Interval;
+use raytracepl::material::Mat;
 use std::task::helper;
 
 fn main() i64 {
-    run("1.ppm");
+    // gc::DioGC__set_eva(false);
+
+    // run("1.ppm");
+    let ch = chan::channel<()>(10 as u64);
+    thread::spawn(||=>{
+        run("1.ppm");
+        ch.send(());
+        // println!("1 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    thread::spawn(||=>{
+        run("2.ppm");
+        ch.send(());
+        // println!("2 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    thread::spawn(||=>{
+        run("3.ppm");
+        ch.send(());
+        // println!("3 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    thread::spawn(||=>{
+        run("4.ppm");
+        ch.send(());
+        // println!("4 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    thread::spawn(||=>{
+        run("5.ppm");
+        ch.send(());
+        // println!("5 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    thread::spawn(||=>{
+        run("6.ppm");
+        ch.send(());
+        // println!("6 exit");
+        // gc::gc_print_block_time();
+        return;
+    });
+    // thread::spawn(||=>{
+    //     run("7.ppm");
+    //     ch.send(());
+    //     // println!("5 exit");
+    //     // gc::gc_print_block_time();
+    //     return;
+    // });
+    // thread::spawn(||=>{
+    //     run("8.ppm");
+    //     ch.send(());
+    //     // println!("6 exit");
+    //     // gc::gc_print_block_time();
+    //     return;
+    // });
+    // ch.recv();
+    // ch.recv();
+    ch.recv();
+    ch.recv();
+    ch.recv();
+    ch.recv();
+    ch.recv();
+    ch.recv();
+
+    println!(gc::DioGC__get_stw_num());
+    // gc::gc_print_block_time();
     return 0;
 }
 
@@ -23,7 +94,7 @@ fn run(f:string) i64 {
     // World
     let world = hittable_list::new();
     let ground_material = material::new_lam(vec3::new(0.5, 0.5, 0.5));
-    world.add(sphere::new(vec3::new(0.0, -1000.0, 0.0), 1000.0, ground_material));
+    world.add(sphere::new(vec3::new(0.0, -1000.0, 0.0), 1000.0, ground_material as Mat));
 
     for let a = -11; a < 11; a = a + 1 {
         for let b = -11; b < 11; b = b + 1 {
@@ -37,37 +108,37 @@ fn run(f:string) i64 {
                     // diffuse
                     let albedo = vec3::random().mul_vec(vec3::random());
                     let sphere_material = material::new_lam(albedo);
-                    world.add(sphere::new(center, 0.2, sphere_material));
+                    world.add(sphere::new(center, 0.2, sphere_material as Mat));
                     
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = vec3::random_range(0.5, 1.0);
                     let fuzz = random_f64_range(0.0, 0.5);
                     let sphere_material = material::new_metal(albedo, fuzz);
-                    world.add(sphere::new(center, 0.2, sphere_material));
+                    world.add(sphere::new(center, 0.2, sphere_material as Mat));
                 } else {
                     // glass
                     let sphere_material = material::new_dielectric(1.5);
-                    world.add(sphere::new(center, 0.2, sphere_material));
+                    world.add(sphere::new(center, 0.2, sphere_material as Mat));
                 }
             }
         }
     }
     let material1 = material::new_dielectric(1.5);
-    world.add(sphere::new(vec3::new(0.0, 1.0, 0.0), 1.0, material1));
+    world.add(sphere::new(vec3::new(0.0, 1.0, 0.0), 1.0, material1 as Mat));
 
     let material2 = material::new_lam(vec3::new(0.4, 0.2, 0.1));
-    world.add(sphere::new(vec3::new(-4.0, 1.0, 0.0), 1.0, material2));
+    world.add(sphere::new(vec3::new(-4.0, 1.0, 0.0), 1.0, material2 as Mat));
 
     let material3 = material::new_metal(vec3::new(0.7, 0.6, 0.5), 0.0);
-    world.add(sphere::new(vec3::new(4.0, 1.0, 0.0), 1.0, material3));
+    world.add(sphere::new(vec3::new(4.0, 1.0, 0.0), 1.0, material3 as Mat));
 
     // Camera
     let cam = camera::default();
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.sample_per_pixel = 500;
+    cam.sample_per_pixel = 1;
     cam.max_depth = 50;
 
     cam.vfov = 20.0;
