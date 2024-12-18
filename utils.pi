@@ -1,3 +1,4 @@
+use std::math;
 pub fn itoa_pl(i:i64) string {
     let bs = [u8 * 10;];
     let len = itoa(i, &bs[0]);
@@ -29,12 +30,19 @@ pub fn degrees_to_radians(degrees:f64) f64 {
 const RAND_MAX:i32;
 
 pub fn random_f64() f64 {
-    let r = rand();
+    let r = rand1();
 
     return r as i64 as f64 /((RAND_MAX as i64+1) as f64);
 }
 
-pub fn rand() i32;
+var seed = 123456789;
+
+fn rand1() i64
+{
+  seed = (1103515245 * seed + 12345) % (1 << 31);
+  return seed;
+}
+
 
 
 
@@ -42,12 +50,27 @@ pub fn random_f64_range(min:f64,max:f64) f64 {
     return min + random_f64() * (max - min);
 }
 
-pub fn fabs(x:f64) f64;
-pub fn fmin(x:f64, y:f64) f64;
+pub fn fabs(x:f64) f64 {
+    if x < 0.0 {
+        return -x;
+        
+    }
+    return x;
+}
+pub fn fmin(x:f64, y:f64) f64 {
+    if x < y {
+        return x;
+    }
+    return y;
+}
 
 
 pub fn pow(x:f64, y:f64) f64;
 
-pub fn tan(x:f64) f64;
+pub fn tan(x:f64) f64{
+    return math::tan(x);
+}
 
-pub fn cos(x:f64) f64;
+pub fn cos(x:f64) f64{
+    return math::cos(x);
+}

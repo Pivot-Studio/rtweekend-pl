@@ -5,14 +5,18 @@ use raytracepl::color;
 use raytracepl::ray::Ray;
 use raytracepl::interval::Interval;
 
-pub struct Sphere<M:Material> {
+use raytracepl::material::Mat;
+
+
+pub struct Sphere{
     center:Vec3;
     radius:f64;
-    mat:M;
+    mat:Mat;
 }
 
-pub fn new<M:Material>(center:Vec3, radius:f64, mat:M) Sphere<M> {
-    return Sphere<M> {
+
+pub fn new(center:Vec3, radius:f64, mat:Mat) Sphere {
+    return Sphere {
         center:center,
         radius:radius,
         mat:mat,
@@ -21,7 +25,7 @@ pub fn new<M:Material>(center:Vec3, radius:f64, mat:M) Sphere<M> {
 
 
 
-impl <M:Material> Hittable for Sphere<M> {
+impl  Hittable for Sphere {
     fn hit(r:Ray,  t:Interval, rec:* HitRecord)  bool {
         let oc = r.origin().sub(self.center);
         let a = r.direction().length_squared();
@@ -47,7 +51,8 @@ impl <M:Material> Hittable for Sphere<M> {
         rec.p = r.at(rec.t);
         let outward_normal = rec.p.sub(self.center).div(self.radius);
         rec.set_face_normal(r, outward_normal);
-        rec.mat = self.mat;
+        let m:Material = self.mat;
+        rec.mat = m;
 
         return true;
     }

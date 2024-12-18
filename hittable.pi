@@ -1,6 +1,8 @@
 use raytracepl::ray::Ray;
 use raytracepl::vec3::Vec3;
 use raytracepl::interval::Interval;
+use raytracepl::material::*;
+use raytracepl::utils::*;
 
 pub trait Material {
     fn scatter(r_in:Ray, rec:HitRecord, attenuation:* Vec3, scattered:*Ray) bool;
@@ -35,3 +37,85 @@ impl HitRecord {
     }
 }
 
+
+
+
+
+impl Material for Mat {
+    fn scatter(r_in:Ray, rec:HitRecord, attenuation:* Vec3, scattered:*Ray) bool {
+        let re = false;
+        let m = *self;
+        match m {
+            Lambertian(a) => {
+                re = a.scatter(r_in, rec, attenuation, scattered);
+            }
+            Metal(a) => {
+                re = a.scatter(r_in, rec, attenuation, scattered);
+            }
+            Dielectric(a) => {
+                re = a.scatter(r_in, rec, attenuation, scattered);
+            }
+        }
+        return re;
+    }
+}
+
+
+
+impl Material for Lambertian {
+    fn scatter(_r_in: Ray, rec:  HitRecord, attenuation: * Vec3, scattered: * Ray) bool {
+        let scatter_direction = rec.normal.add( vec3::ranndom_unit_vector());
+        
+        // Catch degenerate scatter direction
+        if scatter_direction.near_zero() {
+            scatter_direction = rec.normal;
+        }
+
+        *scattered = ray::new(rec.p, scatter_direction);
+        *attenuation = self.albedo;
+        return true;
+    }
+}
+
+impl Material for Metal {
+    fn scatter(r_in: Ray, rec:  HitRecord, attenuation: * Vec3, scattered: * Ray) bool {
+        let reflected = r_in.direction().unit_vector().reflect(rec.normal);
+        *scattered = ray::new(
+            rec.p,
+            reflected.add(
+                vec3::ranndom_unit_vector().mul(self.fuzz)
+            )
+        );
+        *attenuation = self.albedo;
+        return true;
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(r_in: Ray, rec:  HitRecord, attenuation: * Vec3, scattered: * Ray) bool {
+        *attenuation = vec3::new(1.0, 1.0, 1.0);
+        let refraction_ration;
+        if rec.front_face {
+            refraction_ration = 1.0 / self.ir;
+        } else {
+            refraction_ration = self.ir;
+        }
+
+        let unit_direction = r_in.direction().unit_vector();
+        let cos_theta = fmin(unit_direction.neg().dot(rec.normal), 1.0);
+        let sin_theta = sqrt_64(1.0 - cos_theta * cos_theta);
+
+        let cannot_refract = refraction_ration * sin_theta > 1.0;
+        let direction;
+        if cannot_refract || self.reflectance(
+            cos_theta, refraction_ration) > random_f64(){
+            direction = unit_direction.reflect(rec.normal);
+        } else {
+            direction = unit_direction.refract(
+                rec.normal, refraction_ration);
+        }
+
+        *scattered = ray::new(rec.p, direction);
+        return true;
+    }
+}
