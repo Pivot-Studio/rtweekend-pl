@@ -6,6 +6,7 @@ use raytracepl::ray::Ray;
 use raytracepl::vec3::Vec3;
 use raytracepl::interval;
 use std::io;
+use std::libc;
 
 
 pub struct Camera {
@@ -95,7 +96,7 @@ impl Camera {
 
     pub fn render<W:Hittable>(world:W, file:string) void {
         self.initialize();
-        let f = io::open_write(file);
+        let f = io::open(file, libc::O_WRONLY | libc::O_CREAT);
         f.write_string("P3\n");
         f.write_string(itoa_pl(self.image_width));
         f.write_string(" ");
@@ -112,8 +113,9 @@ impl Camera {
                     f, pixel_color,
                     self.sample_per_pixel);
             }
-            // println!(j+1,"/",self.image_height);
         }
+        
+        f.close();
         return;
     }
     pub fn get_ray(i:i64, j:i64) Ray {
