@@ -16,77 +16,8 @@ use raytracepl::material::Mat;
 use std::task::helper;
 
 fn main() i64 {
-    // gc::DioGC__set_eva(false);
 
-    // run("1.ppm");
-    let ch = chan::channel<()>(10 as u64);
-    thread::spawn(||=>{
-        run("1.ppm");
-        ch.send(());
-        // println!("1 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    thread::spawn(||=>{
-        run("2.ppm");
-        ch.send(());
-        // println!("2 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    thread::spawn(||=>{
-        run("3.ppm");
-        ch.send(());
-        // println!("3 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    thread::spawn(||=>{
-        run("4.ppm");
-        ch.send(());
-        // println!("4 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    thread::spawn(||=>{
-        run("5.ppm");
-        ch.send(());
-        // println!("5 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    thread::spawn(||=>{
-        run("6.ppm");
-        ch.send(());
-        // println!("6 exit");
-        // gc::gc_print_block_time();
-        return;
-    });
-    // thread::spawn(||=>{
-    //     run("7.ppm");
-    //     ch.send(());
-    //     // println!("5 exit");
-    //     // gc::gc_print_block_time();
-    //     return;
-    // });
-    // thread::spawn(||=>{
-    //     run("8.ppm");
-    //     ch.send(());
-    //     // println!("6 exit");
-    //     // gc::gc_print_block_time();
-    //     return;
-    // });
-    // ch.recv();
-    // ch.recv();
-    ch.recv();
-    ch.recv();
-    ch.recv();
-    ch.recv();
-    ch.recv();
-    ch.recv();
-
-    println!(gc::DioGC__get_stw_num());
-    // gc::gc_print_block_time();
+    run("1.ppm");
     return 0;
 }
 
@@ -138,7 +69,7 @@ fn run(f:string) i64 {
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.sample_per_pixel = 1;
+    cam.sample_per_pixel = 500;
     cam.max_depth = 50;
 
     cam.vfov = 20.0;
